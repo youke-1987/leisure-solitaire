@@ -1,0 +1,47 @@
+{
+  "name": "leisure-solitaire",
+  "version": "1.0.0",
+  "private": true,
+  "author": "悠然纸牌",
+  "description": "一款为长者设计的单人桌面纸牌合集",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "postinstall": "install-electron",
+    "start": "electron .",
+    "preview": "node scripts/preview-server.mjs",
+    "test": "node --test",
+    "check": "node --check src/app.js && node --check src/core.js && node --check src/games/basic.js && node --check src/games/expansion.js",
+    "dist:mac": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac dir --publish never --config.electronDist=node_modules/electron/dist",
+    "dist:win": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "latest",
+    "electron-builder": "latest"
+  },
+  "build": {
+    "appId": "cn.local.silversolitaire",
+    "productName": "悠然纸牌",
+    "asar": true,
+    "files": [
+      "electron/**/*",
+      "src/**/*",
+      "index.html",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.card-games",
+      "icon": "build/icon.png",
+      "target": ["dir"]
+    },
+    "win": {
+      "icon": "build/icon.png",
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ]
+    }
+  }
+}

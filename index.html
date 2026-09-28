@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'" />
+    <title>悠然纸牌</title>
+    <link rel="stylesheet" href="src/styles.css" />
+  </head>
+  <body>
+    <svg class="icon-sprite" aria-hidden="true">
+      <symbol id="logo-brand" viewBox="0 0 64 64">
+        <rect x="9" y="17" width="29" height="38" rx="5" transform="rotate(-11 23.5 36)" fill="#fffaf0" stroke="currentColor" stroke-width="3" />
+        <rect x="26" y="9" width="29" height="40" rx="5" transform="rotate(8 40.5 29)" fill="#fffdf8" stroke="currentColor" stroke-width="3" />
+        <path d="M40 21c-5-7-13 1 0 11 13-10 5-18 0-11Z" fill="#c18a2c" />
+        <path d="M18 32c-4-5-9 1 0 8 9-7 4-13 0-8Z" fill="currentColor" />
+      </symbol>
+      <symbol id="game-klondike" viewBox="0 0 64 64">
+        <rect x="8" y="20" width="28" height="36" rx="5" transform="rotate(-10 22 38)" />
+        <rect x="27" y="8" width="29" height="39" rx="5" />
+        <path d="M41 19c-6-8-15 2 0 13 15-11 6-21 0-13Z" fill="currentColor" stroke="none" />
+      </symbol>
+      <symbol id="game-freecell" viewBox="0 0 64 64">
+        <rect x="6" y="7" width="12" height="14" rx="3" /><rect x="20" y="7" width="12" height="14" rx="3" />
+        <rect x="34" y="7" width="12" height="14" rx="3" /><rect x="48" y="7" width="10" height="14" rx="3" />
+        <path d="M11 31h12v25H11zm15-5h12v30H26zm15 9h12v21H41z" />
+      </symbol>
+      <symbol id="game-spider" viewBox="0 0 64 64">
+        <circle cx="32" cy="34" r="10" fill="currentColor" stroke="none" /><circle cx="32" cy="21" r="7" fill="currentColor" stroke="none" />
+        <path d="M24 27 14 18M22 33H8m16 8L12 50m28-23 10-9m-8 15h14M40 41l12 9M28 15l-3-7m11 7 3-7" />
+      </symbol>
+      <symbol id="game-tripeaks" viewBox="0 0 64 64">
+        <path d="M5 46 18 22l10 17L38 15l21 31Z" /><path d="M10 48h44v9H10z" /><circle cx="38" cy="15" r="4" fill="currentColor" stroke="none" />
+      </symbol>
+      <symbol id="game-pyramid" viewBox="0 0 64 64">
+        <rect x="27" y="7" width="10" height="13" rx="2" /><rect x="21" y="23" width="10" height="13" rx="2" /><rect x="33" y="23" width="10" height="13" rx="2" />
+        <rect x="15" y="39" width="10" height="13" rx="2" /><rect x="27" y="39" width="10" height="13" rx="2" /><rect x="39" y="39" width="10" height="13" rx="2" />
+      </symbol>
+      <symbol id="game-golf" viewBox="0 0 64 64">
+        <path d="M20 55V9m1 2h27L39 23H21" /><path d="M8 55c10-9 38-9 48 0" /><circle cx="41" cy="44" r="5" fill="currentColor" stroke="none" />
+      </symbol>
+      <symbol id="game-yukon" viewBox="0 0 64 64">
+        <circle cx="46" cy="16" r="7" fill="currentColor" stroke="none" /><path d="m5 52 18-29 9 13 8-12 19 28Z" /><path d="m18 31 5-8 5 8-5-3Z" fill="currentColor" stroke="none" />
+      </symbol>
+      <symbol id="game-scorpion" viewBox="0 0 64 64">
+        <path d="M23 25c-8-9-16-2-12 6m30-6c8-9 16-2 12 6M16 30l8 5m24-5-8 5M25 34l-11 7m25-7 11 7M27 43l-8 10m18-10 8 10" />
+        <ellipse cx="32" cy="35" rx="9" ry="15" fill="currentColor" stroke="none" /><path d="M33 20c2-12 14-13 16-5 2 7-6 9-8 3" />
+      </symbol>
+      <symbol id="game-forty" viewBox="0 0 64 64">
+        <rect x="7" y="13" width="25" height="37" rx="5" /><rect x="31" y="8" width="25" height="37" rx="5" />
+        <text x="31.5" y="39" text-anchor="middle" fill="currentColor" stroke="none" font-size="22" font-weight="900" font-family="Georgia,serif">40</text>
+      </symbol>
+      <symbol id="game-bakers" viewBox="0 0 64 64">
+        <path d="M17 31c-7-2-7-13 1-15 3-9 16-9 19-1 10-3 15 10 8 16Z" /><path d="M18 31h28l-3 22H21Z" /><path d="M26 37v10m12-10v10" />
+      </symbol>
+      <symbol id="game-aces" viewBox="0 0 64 64">
+        <rect x="7" y="7" width="22" height="24" rx="4" /><rect x="35" y="7" width="22" height="24" rx="4" />
+        <rect x="7" y="35" width="22" height="22" rx="4" /><rect x="35" y="35" width="22" height="22" rx="4" />
+        <text x="32" y="42" text-anchor="middle" fill="currentColor" stroke="none" font-size="30" font-weight="900" font-family="Georgia,serif">A</text>
+      </symbol>
+      <symbol id="game-clock" viewBox="0 0 64 64">
+        <circle cx="32" cy="32" r="24" /><path d="M32 14v4m18 14h-4M32 50v-4M14 32h4m14-10v12l9 6" /><circle cx="32" cy="32" r="3" fill="currentColor" stroke="none" />
+      </symbol>
+    </svg>
+    <div id="app" class="app-shell">
+      <header class="topbar">
+        <button id="home-button" class="brand-button" type="button" aria-label="返回游戏大厅">
+          <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#logo-brand"></use></svg></span>
+          <span><strong>悠然纸牌</strong><small>十二种经典玩法</small></span>
+        </button>
+        <div id="game-actions" class="game-actions" hidden>
+          <button id="new-game-button" class="toolbar-button primary" type="button">新牌局</button>
+          <button id="undo-button" class="toolbar-button" type="button">↶ 撤销</button>
+          <button id="hint-button" class="toolbar-button" type="button">💡 提示</button>
+          <button id="rules-button" class="toolbar-button" type="button">玩法</button>
+        </div>
+        <button id="settings-button" class="toolbar-button settings-button" type="button">⚙ 设置</button>
+      </header>
+
+      <main id="main-content" tabindex="-1">
+        <section id="home-view" class="home-view" aria-labelledby="home-title">
+          <div class="welcome-panel">
+            <div>
+              <p class="eyebrow">想玩就开一局</p>
+              <h1 id="home-title" tabindex="-1">今天想玩哪一种？</h1>
+              <p>从熟悉的接龙到轻松的消牌玩法，挑一款慢慢玩。</p>
+            </div>
+            <button id="continue-button" class="continue-button" type="button" hidden>
+              <span>继续上次牌局</span>
+              <small id="continue-label"></small>
+            </button>
+          </div>
+
+          <section aria-labelledby="basic-title">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">熟悉又耐玩</p>
+                <h2 id="basic-title">热门经典</h2>
+              </div>
+              <span class="section-note">推荐从单花色蜘蛛或三峰开始</span>
+            </div>
+            <div id="basic-games" class="game-grid"></div>
+          </section>
+
+          <section aria-labelledby="extra-title">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">换一种思路</p>
+                <h2 id="extra-title">趣味挑战</h2>
+              </div>
+              <span class="section-note">七种各有巧思的纸牌玩法</span>
+            </div>
+            <div id="extra-games" class="game-grid compact"></div>
+          </section>
+        </section>
+
+        <section id="play-view" class="play-view" hidden aria-labelledby="current-game-title">
+          <div class="play-heading">
+            <div class="play-title-group">
+              <span id="current-game-icon" class="current-game-icon" aria-hidden="true"></span>
+              <div>
+              <button id="back-button" class="text-button" type="button">‹ 返回游戏大厅</button>
+              <h1 id="current-game-title" tabindex="-1"></h1>
+              </div>
+            </div>
+            <div class="play-meta">
+              <label for="difficulty-select">难度</label>
+              <select id="difficulty-select"></select>
+              <span id="move-count" class="move-count">0 步</span>
+            </div>
+          </div>
+          <div id="message-bar" class="message-bar" role="status" aria-live="polite">
+            点击一张牌，再点击要放置的位置。
+          </div>
+          <div id="board-scroll" class="board-scroll">
+            <div id="game-board" class="game-board" role="region" aria-label="纸牌游戏区域"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="settings-dialog" class="app-dialog">
+      <form method="dialog">
+        <div class="dialog-heading">
+          <div><p class="eyebrow">显示与操作</p><h2>设置</h2></div>
+          <button class="close-button" value="cancel" aria-label="关闭设置">×</button>
+        </div>
+        <fieldset>
+          <legend>卡牌大小</legend>
+          <div class="choice-row">
+            <label><input type="radio" name="card-size" value="large" /> 大</label>
+            <label><input type="radio" name="card-size" value="xlarge" /> 特大</label>
+            <label><input type="radio" name="card-size" value="huge" /> 超大</label>
+          </div>
+        </fieldset>
+        <label class="switch-row"><span><strong>单击自动移动</strong><small>有明确目标时，点一下牌就自动放好</small></span><input id="single-click-setting" type="checkbox" /></label>
+        <label class="switch-row"><span><strong>高对比度</strong><small>加深文字、边框和花色</small></span><input id="contrast-setting" type="checkbox" /></label>
+        <label class="switch-row"><span><strong>减少动画</strong><small>关闭发牌与移动过渡效果</small></span><input id="motion-setting" type="checkbox" /></label>
+        <label class="switch-row"><span><strong>游戏声音</strong><small>发牌、移动、提示和胜利时播放轻柔音效</small></span><input id="sound-setting" type="checkbox" /></label>
+        <button class="dialog-primary" value="default">完成</button>
+      </form>
+    </dialog>
+
+    <dialog id="rules-dialog" class="app-dialog rules-dialog">
+      <form method="dialog">
+        <div class="dialog-heading">
+          <div><p class="eyebrow">游戏说明</p><h2 id="rules-title">玩法</h2></div>
+          <button class="close-button" value="cancel" aria-label="关闭玩法">×</button>
+        </div>
+        <div id="rules-content" class="rules-content"></div>
+        <button class="dialog-primary" value="default">知道了</button>
+      </form>
+    </dialog>
+
+    <dialog id="win-dialog" class="app-dialog win-dialog">
+      <form method="dialog">
+        <div class="win-symbol" aria-hidden="true">♥</div>
+        <p class="eyebrow">恭喜完成</p>
+        <h2 id="win-title">这一局赢了！</h2>
+        <p id="win-summary"></p>
+        <div class="dialog-actions">
+          <button id="win-home-button" value="home">返回大厅</button>
+          <button id="win-new-button" class="dialog-primary" value="new">再来一局</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script type="module" src="src/app.js"></script>
+  </body>
+</html>
