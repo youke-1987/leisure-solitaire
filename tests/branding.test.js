@@ -45,7 +45,19 @@ test('牌桌适配当前窗口并提供带轨迹的胜利动画', async () => {
   assert.match(html, /<canvas id="win-celebration"/);
   assert.match(app, /function startWinCelebration\(\)/);
   assert.match(app, /particle\.trail/);
+  assert.doesNotMatch(app, /settings\.reduceMotion \|\| !elements\.winCelebration/);
   assert.match(app, /availableFanOffset/);
-  assert.match(styles, /grid-template-rows: auto auto minmax\(0, 1fr\)/);
+  assert.match(styles, /grid-template-rows: auto minmax\(0, 1fr\)/);
   assert.match(styles, /\.win-celebration/);
+  assert.doesNotMatch(styles, /body\.reduce-motion \.win-celebration/);
+});
+
+test('游戏名称与返回入口在左上角，难度和操作集中在右上角', async () => {
+  const html = await readFile(indexPath, 'utf8');
+  const playIdentityPosition = html.indexOf('id="play-identity"');
+  const gameActionsPosition = html.indexOf('id="game-actions"');
+  assert.ok(playIdentityPosition > 0);
+  assert.ok(gameActionsPosition > playIdentityPosition);
+  assert.match(html.slice(playIdentityPosition, gameActionsPosition), /id="back-button"[\s\S]*id="current-game-title"/);
+  assert.match(html.slice(gameActionsPosition), /id="difficulty-select"[\s\S]*id="new-game-button"/);
 });

@@ -69,7 +69,19 @@
           <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#logo-brand"></use></svg></span>
           <span><strong>悠然纸牌</strong><small>十二种经典玩法</small></span>
         </button>
+        <div id="play-identity" class="play-identity" hidden>
+          <span id="current-game-icon" class="current-game-icon" aria-hidden="true"></span>
+          <div>
+            <button id="back-button" class="text-button" type="button">‹ 返回游戏大厅</button>
+            <h1 id="current-game-title" tabindex="-1"></h1>
+          </div>
+        </div>
         <div id="game-actions" class="game-actions" hidden>
+          <div class="topbar-difficulty">
+            <label for="difficulty-select">难度</label>
+            <select id="difficulty-select"></select>
+          </div>
+          <span id="move-count" class="move-count">0 步</span>
           <button id="new-game-button" class="toolbar-button primary" type="button">新牌局</button>
           <button id="undo-button" class="toolbar-button" type="button">↶ 撤销</button>
           <button id="hint-button" class="toolbar-button" type="button">💡 提示</button>
@@ -116,20 +128,6 @@
         </section>
 
         <section id="play-view" class="play-view" hidden aria-labelledby="current-game-title">
-          <div class="play-heading">
-            <div class="play-title-group">
-              <span id="current-game-icon" class="current-game-icon" aria-hidden="true"></span>
-              <div>
-              <button id="back-button" class="text-button" type="button">‹ 返回游戏大厅</button>
-              <h1 id="current-game-title" tabindex="-1"></h1>
-              </div>
-            </div>
-            <div class="play-meta">
-              <label for="difficulty-select">难度</label>
-              <select id="difficulty-select"></select>
-              <span id="move-count" class="move-count">0 步</span>
-            </div>
-          </div>
           <div id="message-bar" class="message-bar" role="status" aria-live="polite">
             点击一张牌，再点击要放置的位置。
           </div>

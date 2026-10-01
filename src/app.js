@@ -54,6 +54,7 @@ const elements = {
   basicGames: document.querySelector('#basic-games'),
   extraGames: document.querySelector('#extra-games'),
   homeButton: document.querySelector('#home-button'),
+  playIdentity: document.querySelector('#play-identity'),
   backButton: document.querySelector('#back-button'),
   gameActions: document.querySelector('#game-actions'),
   newGameButton: document.querySelector('#new-game-button'),
@@ -349,6 +350,8 @@ function showHome() {
   activeHint = null;
   elements.homeView.hidden = false;
   elements.playView.hidden = true;
+  elements.homeButton.hidden = false;
+  elements.playIdentity.hidden = true;
   elements.gameActions.hidden = true;
   renderHome();
   updateContinueButton();
@@ -363,6 +366,8 @@ function showPlay() {
 
   elements.homeView.hidden = true;
   elements.playView.hidden = false;
+  elements.homeButton.hidden = true;
+  elements.playIdentity.hidden = false;
   elements.gameActions.hidden = false;
   elements.gameTitle.textContent = gameName(game);
   const look = presentationFor(game.id);
@@ -565,13 +570,15 @@ function drawCelebrationCard(context, particle, alpha = 1) {
 
 function startWinCelebration() {
   stopWinCelebration();
-  if (settings.reduceMotion || !elements.winCelebration) return Promise.resolve(true);
+  if (!elements.winCelebration) return Promise.resolve(true);
 
   const canvas = elements.winCelebration;
   const context = canvas.getContext('2d');
   if (!context) return Promise.resolve(true);
 
   const run = celebrationRun;
+  canvas.hidden = false;
+  canvas.classList.remove('is-fading');
   const bounds = canvas.getBoundingClientRect();
   const width = Math.max(640, Math.round(bounds.width || window.innerWidth));
   const height = Math.max(360, Math.round(bounds.height || window.innerHeight));
@@ -579,14 +586,13 @@ function startWinCelebration() {
   canvas.width = Math.round(width * pixelRatio);
   canvas.height = Math.round(height * pixelRatio);
   context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-  canvas.hidden = false;
-  canvas.classList.remove('is-fading');
 
   const suits = ['♠', '♥', '♣', '♦'];
   const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
   const particles = [];
   const cardWidth = Math.max(48, Math.min(68, width * .05));
   const cardHeight = cardWidth * 1.42;
+  const launchTop = Math.max(82, Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--topbar-height')) + 22 || 100);
   const startedAt = performance.now();
   let lastFrameAt = startedAt;
   let spawned = 0;
@@ -594,15 +600,15 @@ function startWinCelebration() {
   const spawnCard = (index) => {
     const suit = suits[index % suits.length];
     particles.push({
-      x: width - cardWidth - 36 - (index % 4) * 9,
-      y: 28 + (index % 4) * 6,
+      x: width * .62 + (index % 4) * (cardWidth + 9),
+      y: launchTop + (index % 4) * 5,
       width: cardWidth,
       height: cardHeight,
       rank: ranks[index % ranks.length],
       suit,
       red: suit === '♥' || suit === '♦',
-      velocityX: -(230 + Math.random() * 310),
-      velocityY: -(120 + Math.random() * 430),
+      velocityX: -(170 + Math.random() * 360),
+      velocityY: -70 + Math.random() * 220,
       rotation: (Math.random() - .5) * .34,
       spin: (Math.random() - .5) * 4.2,
       bounces: 0,
@@ -623,10 +629,10 @@ function startWinCelebration() {
       context.clearRect(0, 0, width, height);
       for (const particle of particles) {
         particle.trail.push({ x: particle.x, y: particle.y, rotation: particle.rotation });
-        if (particle.trail.length > 8) particle.trail.shift();
+        if (particle.trail.length > 14) particle.trail.shift();
         particle.trail.forEach((point, index) => {
           const current = { ...particle, ...point };
-          drawCelebrationCard(context, current, (index + 1) / particle.trail.length * .13);
+          drawCelebrationCard(context, current, (index + 1) / particle.trail.length * .2);
         });
 
         particle.velocityY += 910 * delta;
