@@ -70,6 +70,7 @@ const elements = {
   messageBar: document.querySelector('#message-bar'),
   boardScroll: document.querySelector('#board-scroll'),
   board: document.querySelector('#game-board'),
+  winCelebration: document.querySelector('#win-celebration'),
   settingsDialog: document.querySelector('#settings-dialog'),
   rulesDialog: document.querySelector('#rules-dialog'),
   rulesTitle: document.querySelector('#rules-title'),
@@ -91,6 +92,10 @@ let selected = null;
 let activeHint = null;
 let resizeFrame = null;
 let audioContext = null;
+let celebrationFrame = null;
+let celebrationRun = 0;
+let celebrationTimer = null;
+let celebrationResolve = null;
 
 function readJson(key) {
   try {
@@ -339,6 +344,7 @@ function applySettings() {
 }
 
 function showHome() {
+  stopWinCelebration();
   selected = null;
   activeHint = null;
   elements.homeView.hidden = false;
@@ -405,6 +411,7 @@ function startNewGame(gameId, difficultyOverride = null, skipQuestion = false) {
     const accepted = window.confirm('要重新发一副牌吗？当前牌局会被替换。');
     if (!accepted) return;
   }
+  stopWinCelebration();
   const difficulty = difficultyOverride || defaultDifficulty(game);
   const seed = Date.now() % 2147483647;
   const state = game.createGame({ difficulty, seed });
@@ -505,6 +512,157 @@ function pileActionMessage(game) {
   return '已经翻出新的牌。';
 }
 
+function stopWinCelebration() {
+  celebrationRun += 1;
+  if (celebrationFrame) cancelAnimationFrame(celebrationFrame);
+  if (celebrationTimer) clearTimeout(celebrationTimer);
+  celebrationFrame = null;
+  celebrationTimer = null;
+  elements.winCelebration.classList.remove('is-fading');
+  elements.winCelebration.hidden = true;
+  const resolve = celebrationResolve;
+  celebrationResolve = null;
+  if (resolve) resolve(false);
+}
+
+function drawRoundedRect(context, x, y, width, height, radius) {
+  const corner = Math.min(radius, width / 2, height / 2);
+  context.beginPath();
+  context.moveTo(x + corner, y);
+  context.arcTo(x + width, y, x + width, y + height, corner);
+  context.arcTo(x + width, y + height, x, y + height, corner);
+  context.arcTo(x, y + height, x, y, corner);
+  context.arcTo(x, y, x + width, y, corner);
+  context.closePath();
+}
+
+function drawCelebrationCard(context, particle, alpha = 1) {
+  context.save();
+  context.globalAlpha = alpha;
+  context.translate(particle.x + particle.width / 2, particle.y + particle.height / 2);
+  context.rotate(particle.rotation);
+  context.shadowColor = 'rgb(0 24 19 / 28%)';
+  context.shadowBlur = 9;
+  context.shadowOffsetY = 5;
+  drawRoundedRect(context, -particle.width / 2, -particle.height / 2, particle.width, particle.height, 8);
+  context.fillStyle = '#fffdf8';
+  context.fill();
+  context.shadowColor = 'transparent';
+  context.lineWidth = 1.5;
+  context.strokeStyle = '#d6d0c4';
+  context.stroke();
+  context.fillStyle = particle.red ? '#b93642' : '#18322d';
+  context.font = `800 ${Math.round(particle.width * .27)}px Georgia, serif`;
+  context.textAlign = 'left';
+  context.textBaseline = 'top';
+  context.fillText(particle.rank, -particle.width * .37, -particle.height * .39);
+  context.font = `700 ${Math.round(particle.width * .34)}px Georgia, serif`;
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.fillText(particle.suit, 0, 2);
+  context.restore();
+}
+
+function startWinCelebration() {
+  stopWinCelebration();
+  if (settings.reduceMotion || !elements.winCelebration) return Promise.resolve(true);
+
+  const canvas = elements.winCelebration;
+  const context = canvas.getContext('2d');
+  if (!context) return Promise.resolve(true);
+
+  const run = celebrationRun;
+  const bounds = canvas.getBoundingClientRect();
+  const width = Math.max(640, Math.round(bounds.width || window.innerWidth));
+  const height = Math.max(360, Math.round(bounds.height || window.innerHeight));
+  const pixelRatio = Math.min(2, window.devicePixelRatio || 1);
+  canvas.width = Math.round(width * pixelRatio);
+  canvas.height = Math.round(height * pixelRatio);
+  context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+  canvas.hidden = false;
+  canvas.classList.remove('is-fading');
+
+  const suits = ['♠', '♥', '♣', '♦'];
+  const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+  const particles = [];
+  const cardWidth = Math.max(48, Math.min(68, width * .05));
+  const cardHeight = cardWidth * 1.42;
+  const startedAt = performance.now();
+  let lastFrameAt = startedAt;
+  let spawned = 0;
+
+  const spawnCard = (index) => {
+    const suit = suits[index % suits.length];
+    particles.push({
+      x: width - cardWidth - 36 - (index % 4) * 9,
+      y: 28 + (index % 4) * 6,
+      width: cardWidth,
+      height: cardHeight,
+      rank: ranks[index % ranks.length],
+      suit,
+      red: suit === '♥' || suit === '♦',
+      velocityX: -(230 + Math.random() * 310),
+      velocityY: -(120 + Math.random() * 430),
+      rotation: (Math.random() - .5) * .34,
+      spin: (Math.random() - .5) * 4.2,
+      bounces: 0,
+      trail: []
+    });
+  };
+
+  return new Promise((resolve) => {
+    celebrationResolve = resolve;
+    const animate = (now) => {
+      if (run !== celebrationRun) return;
+      const elapsed = now - startedAt;
+      const delta = Math.min(.034, Math.max(.001, (now - lastFrameAt) / 1000));
+      lastFrameAt = now;
+      const expected = Math.min(52, Math.floor(elapsed / 55) + 1);
+      while (spawned < expected) spawnCard(spawned++);
+
+      context.clearRect(0, 0, width, height);
+      for (const particle of particles) {
+        particle.trail.push({ x: particle.x, y: particle.y, rotation: particle.rotation });
+        if (particle.trail.length > 8) particle.trail.shift();
+        particle.trail.forEach((point, index) => {
+          const current = { ...particle, ...point };
+          drawCelebrationCard(context, current, (index + 1) / particle.trail.length * .13);
+        });
+
+        particle.velocityY += 910 * delta;
+        particle.x += particle.velocityX * delta;
+        particle.y += particle.velocityY * delta;
+        particle.rotation += particle.spin * delta;
+        if (particle.y + particle.height >= height && particle.velocityY > 0) {
+          particle.y = height - particle.height;
+          particle.velocityY = -Math.abs(particle.velocityY) * .7;
+          particle.velocityX *= .94;
+          particle.spin *= .88;
+          particle.bounces += 1;
+        }
+        drawCelebrationCard(context, particle);
+      }
+
+      if (elapsed < 3900) {
+        celebrationFrame = requestAnimationFrame(animate);
+        return;
+      }
+
+      celebrationFrame = null;
+      canvas.classList.add('is-fading');
+      celebrationTimer = setTimeout(() => {
+        if (run !== celebrationRun) return;
+        canvas.hidden = true;
+        canvas.classList.remove('is-fading');
+        celebrationTimer = null;
+        celebrationResolve = null;
+        resolve(true);
+      }, 460);
+    };
+    celebrationFrame = requestAnimationFrame(animate);
+  });
+}
+
 function checkGameEnd() {
   const game = currentGame();
   if (!game) return;
@@ -513,8 +671,13 @@ function checkGameEnd() {
     saveSession();
     playTone('win');
     elements.winTitle.textContent = `${gameName(game)}完成了！`;
-    elements.winSummary.textContent = `这一局一共走了 ${session.moves} 步。`; 
-    if (!elements.winDialog.open) elements.winDialog.showModal();
+    elements.winSummary.textContent = `这一局一共走了 ${session.moves} 步。`;
+    const winningGameId = session.gameId;
+    const winningStartedAt = session.startedAt;
+    startWinCelebration().then((completed) => {
+      if (!completed || !session?.won || session.gameId !== winningGameId || session.startedAt !== winningStartedAt) return;
+      if (!elements.winDialog.open) elements.winDialog.showModal();
+    });
     return;
   }
   if (typeof game.isLost === 'function' && game.isLost(session.state)) {
@@ -584,6 +747,7 @@ function undo() {
     return;
   }
   const previous = session.history.pop();
+  stopWinCelebration();
   session.state = previous.state;
   session.moves = previous.moves;
   session.won = false;
@@ -644,8 +808,8 @@ function slotText(role) {
   return '';
 }
 
-function cardOffset(cards, index, fan, cardHeight) {
-  if (index <= 0 || fan === 'none') return fan === 'none' ? index * 1.5 : 0;
+function cardOffset(cards, index, fan, cardHeight, scale = 1) {
+  if (index <= 0 || fan === 'none') return fan === 'none' ? index * 1.5 * scale : 0;
   let offset = 0;
   for (let cursor = 0; cursor < index; cursor += 1) {
     const card = cards[cursor];
@@ -653,10 +817,10 @@ function cardOffset(cards, index, fan, cardHeight) {
     else if (fan === 'down') offset += Math.round(cardHeight * (card.faceUp ? 0.25 : 0.105));
     else offset += 2;
   }
-  return offset;
+  return offset * scale;
 }
 
-function renderCard(card, pile, index, cardWidth, cardHeight) {
+function renderCard(card, pile, index, cardWidth, cardHeight, fanScale = 1) {
   const game = currentGame();
   const button = document.createElement('button');
   const suit = SUIT_INFO[card.suit] || SUIT_INFO.spades;
@@ -664,7 +828,7 @@ function renderCard(card, pile, index, cardWidth, cardHeight) {
   button.className = card.faceUp ? `playing-card ${suit.color}` : 'playing-card face-down';
   button.style.width = `${cardWidth}px`;
   button.style.height = `${cardHeight}px`;
-  button.style.top = `${cardOffset(pile.cards, index, pile.fan, cardHeight)}px`;
+  button.style.top = `${cardOffset(pile.cards, index, pile.fan, cardHeight, fanScale)}px`;
   button.style.zIndex = String(index + 2);
   button.dataset.pileId = pile.id;
   button.dataset.cardIndex = String(index);
@@ -734,24 +898,32 @@ function renderBoard() {
   const game = currentGame();
   const piles = getPileDescriptors();
   const sizeMap = { large: 92, xlarge: 108, huge: 124 };
-  const cardWidth = sizeMap[settings.cardSize] || 108;
+  const preferredCardWidth = sizeMap[settings.cardSize] || 108;
   const isPyramidLayout = game.id === 'pyramid';
   const initialColumns = isPyramidLayout
     ? 7
     : Math.max(1, Number(game.board?.columns) || Math.ceil(Math.max(0, ...piles.map((pile) => pile.x))) + 1);
   const viewportWidth = Math.max(900, elements.boardScroll.clientWidth || 900);
-  const cardHeight = Math.round(cardWidth * 1.42);
-  const gap = Math.max(10, Math.round(cardWidth * 0.1));
+  const viewportHeight = Math.max(360, elements.boardScroll.clientHeight || window.innerHeight - 240);
   const padding = 28;
   const columns = initialColumns;
+  const minimumGap = 8;
+  const fittedCardWidth = Math.floor((viewportWidth - padding * 2 - Math.max(0, columns - 1) * minimumGap) / columns);
+  const cardWidth = Math.max(68, Math.min(preferredCardWidth, fittedCardWidth));
+  const cardHeight = Math.round(cardWidth * 1.42);
+  const gap = Math.max(minimumGap, Math.round(cardWidth * 0.08));
   const minimumWidth = padding * 2 + columns * cardWidth + Math.max(0, columns - 1) * gap;
   const boardWidth = Math.max(viewportWidth, minimumWidth);
   const stepX = columns <= 1 ? 0 : (boardWidth - padding * 2 - cardWidth) / (columns - 1);
   const maximumY = Math.max(0, ...piles.map((pile) => pile.y));
-  const rowStep = maximumY > 2 ? Math.round(cardHeight * 0.5) : cardHeight + 52;
   const yScale = maximumY <= 2 && Number(game.board?.minRows) > 5 ? 0.5 : 1;
+  const naturalRowStep = maximumY > 2 ? Math.round(cardHeight * 0.5) : cardHeight + 52;
+  const availableRowStep = maximumY > 0
+    ? (viewportHeight - padding * 2 - cardHeight) / (maximumY * yScale)
+    : naturalRowStep;
+  const rowStep = Math.min(naturalRowStep, Math.max(18, availableRowStep));
 
-  let contentBottom = 600;
+  let contentBottom = viewportHeight;
   const nodes = piles.map((pile) => {
     const node = document.createElement('div');
     node.className = 'pile';
@@ -763,6 +935,12 @@ function renderBoard() {
     const layoutX = isPyramidLayout ? pile.x / 2 : pile.x;
     const left = padding + layoutX * stepX;
     const top = padding + pile.y * yScale * rowStep;
+    const lastIndex = Math.max(0, pile.cards.length - 1);
+    const naturalFanOffset = cardOffset(pile.cards, lastIndex, pile.fan, cardHeight);
+    const availableFanOffset = Math.max(0, viewportHeight - padding - top - cardHeight);
+    const fanScale = naturalFanOffset > availableFanOffset && naturalFanOffset > 0
+      ? Math.max(.08, availableFanOffset / naturalFanOffset)
+      : 1;
     node.style.left = `${left}px`;
     node.style.top = `${top}px`;
     node.style.width = `${cardWidth}px`;
@@ -795,7 +973,7 @@ function renderBoard() {
     const visibleIndices = pile.fan === 'none' && pile.cards.length
       ? [clockRevealIndex >= 0 ? clockRevealIndex : pile.cards.length - 1]
       : pile.cards.map((_, index) => index);
-    visibleIndices.forEach((index) => node.append(renderCard(pile.cards[index], pile, index, cardWidth, cardHeight)));
+    visibleIndices.forEach((index) => node.append(renderCard(pile.cards[index], pile, index, cardWidth, cardHeight, fanScale)));
     if (pile.cards.length > 1 && /stock|deck/i.test(pile.role)) {
       const count = document.createElement('span');
       count.className = 'pile-count';
@@ -803,13 +981,13 @@ function renderBoard() {
       count.setAttribute('aria-hidden', 'true');
       node.append(count);
     }
-    const pileHeight = cardHeight + cardOffset(pile.cards, Math.max(0, pile.cards.length - 1), pile.fan, cardHeight);
+    const pileHeight = cardHeight + cardOffset(pile.cards, lastIndex, pile.fan, cardHeight, fanScale);
     contentBottom = Math.max(contentBottom, top + pileHeight + padding);
     return node;
   });
 
   elements.board.style.width = `${boardWidth}px`;
-  elements.board.style.height = `${Math.max(620, contentBottom)}px`;
+  elements.board.style.height = `${Math.max(viewportHeight, contentBottom)}px`;
   elements.board.dataset.gameId = game.id;
   elements.board.replaceChildren(...nodes);
   elements.moveCount.textContent = `${session.moves} 步`;
@@ -863,6 +1041,7 @@ function playTone(kind) {
     if (audioContext.state === 'suspended') audioContext.resume().catch(() => {});
 
     const profiles = {
+      tap: { type: 'sine', notes: [[392, 0]], duration: .045, volume: .018 },
       deal: { type: 'triangle', notes: [[330, 0], [294, .055], [262, .11]], duration: .09, volume: .026 },
       move: { type: 'sine', notes: [[494, 0], [587, .05]], duration: .085, volume: .032 },
       undo: { type: 'sine', notes: [[523, 0], [415, .065]], duration: .11, volume: .028 },
@@ -899,6 +1078,14 @@ elements.undoButton.addEventListener('click', undo);
 elements.hintButton.addEventListener('click', showHint);
 elements.rulesButton.addEventListener('click', showRules);
 elements.settingsButton.addEventListener('click', () => elements.settingsDialog.showModal());
+
+document.addEventListener('click', (event) => {
+  const target = event.target instanceof Element
+    ? event.target.closest('button, select, input')
+    : null;
+  if (!target || target.disabled) return;
+  playTone('tap');
+}, true);
 
 elements.difficultySelect.addEventListener('change', () => {
   if (!session) return;
