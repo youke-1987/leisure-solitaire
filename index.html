@@ -77,17 +77,16 @@
           </div>
         </div>
         <div id="game-actions" class="game-actions" hidden>
-          <div class="topbar-difficulty">
-            <label for="difficulty-select">难度</label>
-            <select id="difficulty-select"></select>
-          </div>
-          <span id="move-count" class="move-count">0 步</span>
           <button id="new-game-button" class="toolbar-button primary" type="button">新牌局</button>
-          <button id="undo-button" class="toolbar-button" type="button">↶ 撤销</button>
-          <button id="hint-button" class="toolbar-button" type="button">💡 提示</button>
+          <button id="hint-button" class="toolbar-button" type="button">提示</button>
+          <button id="undo-button" class="toolbar-button" type="button">撤销</button>
+          <span id="move-count" class="move-count">0 步</span>
+          <div class="topbar-difficulty">
+            <select id="difficulty-select" aria-label="难度"></select>
+          </div>
           <button id="rules-button" class="toolbar-button" type="button">玩法</button>
         </div>
-        <button id="settings-button" class="toolbar-button settings-button" type="button">⚙ 设置</button>
+        <button id="settings-button" class="toolbar-button settings-button" type="button">设置</button>
       </header>
 
       <main id="main-content" tabindex="-1">
@@ -106,22 +105,20 @@
 
           <section aria-labelledby="basic-title">
             <div class="section-heading">
-              <div>
-                <p class="eyebrow">熟悉又耐玩</p>
+              <div class="section-title-line">
                 <h2 id="basic-title">热门经典</h2>
+                <p class="eyebrow">熟悉又耐玩</p>
               </div>
-              <span class="section-note">推荐从单花色蜘蛛或三峰开始</span>
             </div>
             <div id="basic-games" class="game-grid"></div>
           </section>
 
           <section aria-labelledby="extra-title">
             <div class="section-heading">
-              <div>
-                <p class="eyebrow">换一种思路</p>
+              <div class="section-title-line">
                 <h2 id="extra-title">趣味挑战</h2>
+                <p class="eyebrow">换一种思路</p>
               </div>
-              <span class="section-note">七种各有巧思的纸牌玩法</span>
             </div>
             <div id="extra-games" class="game-grid compact"></div>
           </section>
@@ -139,6 +136,9 @@
     </div>
 
     <canvas id="win-celebration" class="win-celebration" hidden aria-hidden="true"></canvas>
+    <button id="skip-win-celebration" class="skip-win-celebration" type="button" hidden>
+      跳过动画 <span aria-hidden="true">Esc</span>
+    </button>
 
     <dialog id="settings-dialog" class="app-dialog">
       <form method="dialog">
@@ -158,7 +158,26 @@
         <label class="switch-row"><span><strong>高对比度</strong><small>加深文字、边框和花色</small></span><input id="contrast-setting" type="checkbox" /></label>
         <label class="switch-row"><span><strong>减少动画</strong><small>关闭发牌与移动过渡效果</small></span><input id="motion-setting" type="checkbox" /></label>
         <label class="switch-row"><span><strong>游戏声音</strong><small>点击、发牌、移动、提示和胜利时播放轻柔音效</small></span><input id="sound-setting" type="checkbox" /></label>
+        <button id="privacy-button" class="settings-link" type="button"><strong>隐私政策</strong><small>查看数据使用与保存说明</small></button>
         <button class="dialog-primary" value="default">完成</button>
+      </form>
+    </dialog>
+
+    <dialog id="privacy-dialog" class="app-dialog privacy-dialog">
+      <form method="dialog">
+        <div class="dialog-heading">
+          <div><p class="eyebrow">关于悠然纸牌</p><h2>隐私政策</h2></div>
+          <button class="close-button" value="cancel" aria-label="关闭隐私政策">×</button>
+        </div>
+        <div class="privacy-content">
+          <p><strong>更新日期：2026 年 10 月 2 日</strong></p>
+          <p>悠然纸牌不收集、上传或与第三方共享个人数据、使用数据和设备标识。</p>
+          <p>牌局进度与显示偏好保存在应用的沙盒存储中，只用于继续游戏和恢复设置。</p>
+          <p>应用不包含广告、分析统计、用户账户或第三方跟踪组件。</p>
+          <p>如有隐私或支持问题，请联系 youke1987@gmail.com。</p>
+        </div>
+        <button id="clear-data-button" class="privacy-clear" type="button">清除全部应用数据</button>
+        <button class="dialog-primary" value="default">知道了</button>
       </form>
     </dialog>
 

@@ -13,14 +13,16 @@
     "test": "node --test",
     "check": "node --check src/app.js && node --check src/core.js && node --check src/games/basic.js && node --check src/games/expansion.js",
     "dist:mac": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac dir --publish never --config.electronDist=node_modules/electron/dist",
+    "preflight:mas": "node scripts/mas-preflight.mjs",
+    "dist:mas": "node scripts/mas-preflight.mjs && electron-builder --mac --universal --publish never --config electron-builder.mas.cjs",
     "dist:win": "electron-builder --win portable"
   },
   "devDependencies": {
-    "electron": "latest",
-    "electron-builder": "latest"
+    "electron": "44.0.0",
+    "electron-builder": "26.15.3"
   },
   "build": {
-    "appId": "cn.local.silversolitaire",
+    "appId": "com.apopo.leisuresolitaire",
     "productName": "悠然纸牌",
     "asar": true,
     "files": [
